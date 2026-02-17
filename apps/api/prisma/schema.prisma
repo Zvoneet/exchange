@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum AgentType {
+  personal
+  entity
+}
+
+enum AgentStatus {
+  active
+  revoked
+  pending
+}
+
+enum RegistrationMode {
+  open
+  code_required
+}
+
+model Agent {
+  id           String        @id @default(uuid())
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  lastSeenAt   DateTime?
+  agentType    AgentType
+  displayName  String
+  publicUrl    String?       @unique
+  handle       String?       @unique
+  status       AgentStatus   @default(active)
+  capabilities Capability[]
+  metadata     AgentMetadata?
+  refreshTokens RefreshToken[]
+}
+
+model Capability {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  agentId   String
+  name      String
+  version   String?
+  actions   Json?
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([name])
+}
+
+model AgentMetadata {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  agentId     String   @unique
+  tags        Json?
+  categories  Json?
+  locales     Json?
+  geoLat      Float?
+  geoLng      Float?
+  geoRadiusKm Float?
+  cuisines    Json?
+  serviceArea String?
+  extra       Json?
+  agent       Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([geoLat, geoLng])
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+  agentId   String
+  tokenHash String
+  agent     Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([agentId, createdAt])
+}
+
+model ExchangeConfig {
+  id                   Int              @id
+  registrationMode     RegistrationMode @default(open)
+  registrationCodeHash String?
+  updatedAt            DateTime         @updatedAt
+}
