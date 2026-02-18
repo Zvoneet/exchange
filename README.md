@@ -83,6 +83,8 @@ pnpm dev
 
 - API: `http://localhost:3000/v1`
 - Web: `http://localhost:5173`
+- Swagger UI: `http://localhost:3000/docs`
+- OpenAPI JSON: `http://localhost:3000/docs-json`
 
 ## Scripts
 

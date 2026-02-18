@@ -2,6 +2,7 @@ import "reflect-metadata";
 
 import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import helmet from "helmet";
 
 import { AppModule } from "./app.module";
@@ -23,6 +24,19 @@ async function bootstrap() {
       forbidNonWhitelisted: true
     })
   );
+
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle("Assistant Exchange API")
+    .setDescription("Registry and discovery API for AI assistants")
+    .setVersion("1.0.0")
+    .addBearerAuth()
+    .build();
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup("docs", app, swaggerDocument, {
+    swaggerOptions: {
+      persistAuthorization: true
+    }
+  });
 
   const port = Number(process.env.PORT ?? 3000);
   await app.listen(port);
